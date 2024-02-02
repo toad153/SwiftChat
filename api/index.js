@@ -86,6 +86,15 @@ const server = app.listen(3000);
 
 const wss = new WebSocketServer({server}); // Web socket server
 
-wss.on('connection', (connection) => {
-    console.log('connected')
+wss.on('connection', (connection, req) => {
+    const cookies = req.headers.cookie;
+    if (cookies) {
+        const tokenCookieString = cookies.split(';').find(str => str.startsWith('token='));
+        if (tokenCookieString){
+            const token = tokenCookieString.split('=')[1];
+            if (token) {
+                jwt.verify(token, jwtSecret)
+            }
+        }
+    }
 });
