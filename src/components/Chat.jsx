@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import axios from "axios"
 import Avatar from './Avatar';
 import Logo from './Logo';
+import Contact from './Contact';
 import UserContext from './UserContext';
 import { uniqBy } from 'lodash';
 // import { response } from 'express';
@@ -11,6 +12,7 @@ function Chat() {
     // States for various functions
     const [ws, setWs] = useState(null);
     const [onlinePeople, setOnlinePeople] = useState({});
+    const [offlinePeople, setofflinePeople] = useState({});
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState('')
     const [messages, setMessages] = useState([]);
@@ -101,11 +103,17 @@ function Chat() {
 
     }, [messages])
 
-    // to show people available i.e. online or offline
+    // to show offline people
     useEffect(() =>{
         axios.get('/people').then(res => {
-            const offlinePeople = res.data.filter(p => p._id !==id ).filter(p => Object.keys(onlinePeople).includes(p._id));
-            console.log(offlinePeople)
+            const offlinePeopleArr = res.data
+            .filter(p => p._id !==id )
+            .filter(p => !Object.keys(onlinePeople).includes(p._id));
+            const offlinePeople = {};
+            offlinePeopleArr.forEach(p=> {
+                offlinePeople[p._id] = p;
+            });
+            setofflinePeople(offlinePeople);
         });
     }, [onlinePeople]);
 
@@ -113,22 +121,30 @@ function Chat() {
 
         // List of users on left side
         <div className='flex h-screen'>
-            <div className='bg-cyan-100 w-1/3'>
+            <div className='bg-cust-dark w-1/3'>
                 <Logo />
                 {Object.keys(onlinePeopleExcl).map(userId => (
-                    <div key={userId} onClick={() => setSelectedUserId(userId)}
-                        className={'border-b border-gray-300 flex items-center gap-2 cursor-pointer ' + (userId === selectedUserId ? 'bg-cyan-200' : '')}>
-                        {userId === selectedUserId && (
-                            <div className='w-1 bg-cyan-500 h-12'></div>
-                        )}
-                        <div className='flex gap-2 py-2 pl-4 items-center'>
-                            <Avatar online={true} username={onlinePeople[userId]} userId={userId} />
-                            <span className='text-gray-800'>{onlinePeople[userId]}</span>
-                        </div>
-                    </div>
+                    <Contact 
+                    key={userId}
+                    id={userId} 
+                    online = {true}
+                    username={onlinePeopleExcl[userId]}
+                    onClick={() => setSelectedUserId(userId)}
+                    selected = {userId === selectedUserId}
+                    />
+                ))}
+                {Object.keys(offlinePeople).map(userId => (
+                    <Contact
+                    key={userId} 
+                    id={userId} 
+                    online = {false}
+                    username={offlinePeople[userId].username}
+                    onClick={() => setSelectedUserId(userId)}
+                    selected = {userId === selectedUserId}
+                    />
                 ))}
             </div>
-            <div className=" flex flex-col bg-cyan-400 w-2/3 p-2">
+            <div className=" flex flex-col bg-cust-grey w-2/3 p-2">
                 <div className='flex-grow'>
                     {!selectedUserId && (
                         <div className='flex h-full items-center justify-center'>
@@ -143,7 +159,7 @@ function Chat() {
                             <div className='overflow-y-scroll absolute inset-0'>
                                 {messageWoDupes.map(message => (
                                     <div key={message._id} className={message.sender === id ? 'text-right' : 'text-left'}>
-                                        <div className={" inline-block p-2 my-2 rounded-sm text-sm " + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500')}>
+                                        <div className={" inline-block p-2 my-2 rounded-sm text-sm " + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-700')}>
                                             {/* sender:{message.sender} <br />
                                         my id:{id} <br /> */}
                                             {message.text}

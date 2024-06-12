@@ -18,7 +18,7 @@ function RegisterAndLoginForm() {
   }
 
   return (
-    <div className='bg-blue-50 h-screen flex items-center'>
+    <div className='bg-cust-grey h-screen flex items-center'>
       <form action="" className='w-64 mx-auto' onSubmit={handleSubmit}>
         <input type="text" value={username}
           onChange={ev => setUsername(ev.target.value)}
@@ -28,7 +28,7 @@ function RegisterAndLoginForm() {
           {isLoginOrRegister === 'register' ? 'Register' : 'Login'}
         </button>
 
-        <div className='text-center mt-2'>
+        <div className='text-center mt-2 text-white'>
           {isLoginOrRegister === 'register' && (
             <div>
               Already a member?
