@@ -15,6 +15,9 @@ function Avatar({ userId, username, online }) {
             {online && (
                 <div className='absolute w-3 h-3 bg-green-400 rounded-lg -bottom-0 right-0 border border-white'></div>
             )}
+            {!online && (
+                <div className='absolute w-3 h-3 bg-gray-400 rounded-lg -bottom-0 right-0 border border-white'></div>
+            )}
         </div>
     )
 }

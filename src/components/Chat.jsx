@@ -16,7 +16,7 @@ function Chat() {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState('')
     const [messages, setMessages] = useState([]);
-    const { username, id } = useContext(UserContext);
+    const { username, id, setId, setUsername } = useContext(UserContext);
     const divUnderMessages = useRef()
 
     // creating a websocket connection
@@ -25,12 +25,12 @@ function Chat() {
         connectToWs();
     }, []);
 
-    function connectToWs(){
+    function connectToWs() {
         const ws = new WebSocket('ws://localhost:3000');
         setWs(ws);
-        ws.addEventListener('message', handleMessage)    
+        ws.addEventListener('message', handleMessage)
         ws.addEventListener('close', () => {
-            setTimeout(()=>{
+            setTimeout(() => {
                 console.log('Disconnected Trying to reconnect...');
                 connectToWs();
             }, 1000)
@@ -46,7 +46,7 @@ function Chat() {
             });
         }
     }, [selectedUserId])
-    
+
 
     // To show people who are online:
     function showOnlinePeople(peopleArray) {
@@ -90,10 +90,17 @@ function Chat() {
             recipient: selectedUserId,
             _id: Date.now(),
         }]));
-
-
-
     }
+
+    
+        // Function to logout
+    function logout() {
+            axios.post('/logout').then(() => {
+                setWs(null);
+                setId(null);
+                setUsername(null);
+            });
+        }
 
     useEffect(() => {
         const div = divUnderMessages.current;
@@ -104,13 +111,13 @@ function Chat() {
     }, [messages])
 
     // to show offline people
-    useEffect(() =>{
+    useEffect(() => {
         axios.get('/people').then(res => {
             const offlinePeopleArr = res.data
-            .filter(p => p._id !==id )
-            .filter(p => !Object.keys(onlinePeople).includes(p._id));
+                .filter(p => p._id !== id)
+                .filter(p => !Object.keys(onlinePeople).includes(p._id));
             const offlinePeople = {};
-            offlinePeopleArr.forEach(p=> {
+            offlinePeopleArr.forEach(p => {
                 offlinePeople[p._id] = p;
             });
             setofflinePeople(offlinePeople);
@@ -121,28 +128,41 @@ function Chat() {
 
         // List of users on left side
         <div className='flex h-screen'>
-            <div className='bg-cust-dark w-1/3'>
-                <Logo />
-                {Object.keys(onlinePeopleExcl).map(userId => (
-                    <Contact 
-                    key={userId}
-                    id={userId} 
-                    online = {true}
-                    username={onlinePeopleExcl[userId]}
-                    onClick={() => setSelectedUserId(userId)}
-                    selected = {userId === selectedUserId}
-                    />
-                ))}
-                {Object.keys(offlinePeople).map(userId => (
-                    <Contact
-                    key={userId} 
-                    id={userId} 
-                    online = {false}
-                    username={offlinePeople[userId].username}
-                    onClick={() => setSelectedUserId(userId)}
-                    selected = {userId === selectedUserId}
-                    />
-                ))}
+            <div className='bg-cust-dark w-1/3 flex flex-col'>
+                <div className='flex-grow'>
+                    <Logo />
+                    {Object.keys(onlinePeopleExcl).map(userId => (
+                        <Contact
+                            key={userId}
+                            id={userId}
+                            online={true}
+                            username={onlinePeopleExcl[userId]}
+                            onClick={() => setSelectedUserId(userId)}
+                            selected={userId === selectedUserId}
+                        />
+                    ))}
+                    {Object.keys(offlinePeople).map(userId => (
+                        <Contact
+                            key={userId}
+                            id={userId}
+                            online={false}
+                            username={offlinePeople[userId].username}
+                            onClick={() => setSelectedUserId(userId)}
+                            selected={userId === selectedUserId}
+                        />
+                    ))}
+                </div>
+
+                <div className='p-2 text-center flex items-center justify-center'>
+                    <span className='text-gray-300 mr-2 text-sm flex items-center'>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                            <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                        </svg>
+                        {username}
+                    </span>
+                    <button onClick={logout} className='text-sm bg-blue-500 py-1 px-2 text-white rounded-sm'>logout</button>
+                </div>
+
             </div>
             <div className=" flex flex-col bg-cust-grey w-2/3 p-2">
                 <div className='flex-grow'>
