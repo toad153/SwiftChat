@@ -7,7 +7,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import UserModel from './models/User.js';
 import Message from './models/Messages.js'
-import ws, { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 
 
 dotenv.config();
@@ -135,7 +135,6 @@ wss.on('connection', (connection, req) => {
         [...wss.clients].forEach(client => {
             client.send(JSON.stringify({
                 online: [...wss.clients].map(c => ({ userId: c.userId, username: c.username })),
-    
             }));
         });
     }
